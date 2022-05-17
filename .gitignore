@@ -20,3 +20,8 @@ Py/opencv_python*
 Py/requests*
 Py/six*
 Py/urllib3*
+Py/bg*
+Py/sld*
+Py/slider*
+Py/targ*
+Py/temp*
