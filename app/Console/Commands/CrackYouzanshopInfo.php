@@ -50,8 +50,10 @@ class CrackYouzanshopInfo extends Command
                         $process->wait();
 
                         $res = $process->getOutput();
-                    } catch (ProcessTimedOutException $e) {
-                        Log::error("CrackYouzanShopInfoTimeout: shop {$shop->id} {$shop->name}");
+                    } catch (\Exception $e) {
+                        $cls = get_class($e);
+                        $msg = $e->getMessage();
+                        Log::error("CrackYouzanShopException: shop {$shop->id} {$shop->name} {$cls} {$msg}");
                         continue;
                     }
 

@@ -108,8 +108,10 @@ class CrawlEntInfo extends Command
             $process->start();
             $process->wait();
             $res = $process->getOutput();
-        } catch (ProcessTimedOutException $e) {
-            Log::error("CrawEntInfoTimeout: shop {$shop->id} {$shop->name}");
+        } catch (\Exception $e) {
+            $cls = get_class($e);
+            $msg = $e->getMessage();
+            Log::error("CrawEntInfoException: shop {$shop->id} {$shop->name} {$cls} {$msg}");
             return 'fail';
         }
 
