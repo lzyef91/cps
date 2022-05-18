@@ -20,7 +20,7 @@ class RestrictYouzanShop extends Command
      *
      * @var string
      */
-    protected $description = '去重有赞店铺主体';
+    protected $description = '去掉有赞店铺脏数据';
 
     /**
      * Execute the console command.

@@ -16,6 +16,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
+        // 同步有赞店铺信息
+        $schedule->command('youzan:schedule')->dailyAt('2:00');
     }
 
     /**
