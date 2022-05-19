@@ -134,8 +134,9 @@ class ExportYouzanShopsForm extends Form implements LazyRenderable
         $payload = $this->payload['q'] ?? NULL;
         $query = $this->buildGrabQuery($payload);
         $total = $query->count();
-
-        $this->confirm('确认导出',"此次导出将消耗企客多{$total}条线索");
+        if ($total > 0) {
+            $this->confirm('确认导出',"此次导出将消耗企客多{$total}条线索");
+        }
         $this->checkbox('export_fields', '导出项目')->options($this->options)->required();
     }
 
