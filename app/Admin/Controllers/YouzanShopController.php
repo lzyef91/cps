@@ -48,17 +48,17 @@ class YouzanShopController extends AdminController
                     4 => Shop::$PrincipalType[4].'('.$s4.')',
                 ]);
 
-                // 主营类目选择器
+                // 经营类目选择器
                 $list = Category::whereRelation('shop', 'deleted_at', NULL)
                             ->selectRaw('count(id) as num, category_name')
-                            ->where('major', 1)
+                            // ->where('major', 1)
                             ->groupBy('category_name')->orderBy('num','desc')
                             ->limit(15)->pluck('num', 'category_name');;
                 $ops = [];
                 foreach ($list as $name => $num) {
                     $ops[$name] = $name.'('.$num.')';
                 }
-                $selector->selectOne('categories.category_name', '主营类目', $ops);
+                $selector->selectOne('categories.category_name', '经营类目', $ops);
 
                 // 省份选择器
                 // $list = Enterprise::selectRaw('region_province_code,region_province,count(distinct qike_enterprise_id) as num')
@@ -143,7 +143,7 @@ class YouzanShopController extends AdminController
             $grid->fixColumns(2);
 
             // 默认排序
-            $grid->model()->orderBy('id', 'desc');
+            $grid->model()->orderBy('created_at', 'desc');
 
             $grid->column('principal_name');
 
@@ -169,7 +169,7 @@ class YouzanShopController extends AdminController
 
             // $grid->column('principal_address');
 
-            $grid->column('open_at');
+            $grid->column('open_at')->sortable();
 
             $grid->column('mp_qrcode')
                 ->if(function($col){
@@ -204,12 +204,15 @@ class YouzanShopController extends AdminController
         return Show::make($id, $model, function (Show $show) {
 
             $shop = $show->model();
-
-            if ($shop->has_contacts == Contact::$STATUS[Contact::$WAIT_TO_GRAB]) {
-                $show->tools(function(Tools $tools){
+            $show->panel()->tools(function(Tools $tools)use($shop){
+                $tools->disableEdit();
+                // 领取线索
+                if ($shop->has_contacts == Contact::$STATUS[Contact::$WAIT_TO_GRAB]) {
                     $tools->append(new GrabContact());
-                });
-            }
+                }
+            });
+
+
 
             $show->field('principal_name');
             $show->field('has_contacts', '联系人')->unescape()->as(function($status)use($shop){
@@ -258,8 +261,10 @@ class YouzanShopController extends AdminController
                     $wColor = admin_color()->get('warning');
                     $sColor = admin_color()->get('success');
                     $html = "<span class=\"label\" style=\"background:{$pColor};margin-right:5px;\">{$status}</span>";
-                    $html .= "<span class=\"label\" style=\"background:{$wColor};margin-right:5px;\">{$this->enterprise->size}</span>";
-                    $html .= "<span class=\"label\" style=\"background:{$sColor};\">{$this->enterprise->enterprise_type}</span>";
+                    if ($this->enterprise) {
+                        $html .= "<span class=\"label\" style=\"background:{$wColor};margin-right:5px;\">{$this->enterprise->size}</span>";
+                        $html .= "<span class=\"label\" style=\"background:{$sColor};\">{$this->enterprise->enterprise_type}</span>";
+                    }
                     return $html;
             });
             $show->field('enterprise.enterprise_uniscid', '统一社会信用代码');

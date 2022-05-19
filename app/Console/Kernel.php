@@ -17,7 +17,8 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         // 同步有赞店铺信息
-        $schedule->command('youzan:schedule')->dailyAt('2:00');
+        $schedule->command('youzan:schedule')->dailyAt('2:00')
+            ->runInBackground()->withoutOverlapping();
     }
 
     /**

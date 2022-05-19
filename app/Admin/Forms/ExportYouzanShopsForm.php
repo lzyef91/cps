@@ -3,7 +3,6 @@
 namespace App\Admin\Forms;
 
 use Dcat\Admin\Widgets\Form;
-use Illuminate\Support\Facades\Log;
 use Dcat\Admin\Traits\LazyWidget;
 use Dcat\Admin\Contracts\LazyRenderable;
 use App\Exports\YouzanShopExport;
@@ -61,8 +60,6 @@ class ExportYouzanShopsForm extends Form implements LazyRenderable
         $query = $this->buildGrabQuery($payload);
         $total = $query->count();
 
-        Log::debug($total);
-
         // 生成导出记录
 
         // 文件名
@@ -103,7 +100,6 @@ class ExportYouzanShopsForm extends Form implements LazyRenderable
             $batch = Bus::batch($batches)->then(function(Batch $batch)
             use($exportJob,$uuid,$excelName,$disk){
                 // 处理完成后导出
-                Log::debug($batch->id.' success');
                 $exportJob->store($excelName, $disk)->chain([
                     new NotifyExportResult($uuid, true)
                 ]);
@@ -134,6 +130,12 @@ class ExportYouzanShopsForm extends Form implements LazyRenderable
      */
     public function form()
     {
+        // 计算消耗的线索
+        $payload = $this->payload['q'] ?? NULL;
+        $query = $this->buildGrabQuery($payload);
+        $total = $query->count();
+
+        $this->confirm('确认导出',"此次导出将消耗企客多{$total}条线索");
         $this->checkbox('export_fields', '导出项目')->options($this->options)->required();
     }
 
