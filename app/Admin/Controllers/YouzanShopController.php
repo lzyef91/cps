@@ -142,6 +142,8 @@ class YouzanShopController extends AdminController
             // 固定列
             $grid->fixColumns(2);
 
+            $grid->paginate(50);
+
             // 默认排序
             $grid->model()->orderBy('created_at', 'desc');
 
