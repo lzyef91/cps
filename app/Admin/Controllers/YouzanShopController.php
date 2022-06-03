@@ -145,7 +145,7 @@ class YouzanShopController extends AdminController
             $grid->paginate(50);
 
             // 默认排序
-            $grid->model()->orderBy('created_at', 'desc');
+            $grid->model()->orderBy('id', 'desc');
 
             $grid->column('principal_name');
 
