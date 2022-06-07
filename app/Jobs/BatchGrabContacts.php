@@ -28,7 +28,7 @@ class BatchGrabContacts implements ShouldQueue
 
     public $failOnTimeout = true;
 
-    public $tries = 3;
+    public $tries = 1;
 
     /**
      * Create a new job instance.
