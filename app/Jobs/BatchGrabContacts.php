@@ -26,7 +26,7 @@ class BatchGrabContacts implements ShouldQueue
 
     public $timeout = 1200;
 
-    public $failOnTimeout = true;
+    // public $failOnTimeout = true;
 
     public $tries = 1;
 
