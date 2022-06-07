@@ -56,7 +56,7 @@ class ExportController extends AdminController
                     return "<a href=\"{$url}\" target=\"_blank\" class=\"btn btn-primary text-white\">下载</a>";
                 } else {
                     // 失败
-                    return "<a target=\"_blank\" class=\"btn btn-error text-white\">导出失败</a>";
+                    return "<button class=\"btn btn-danger text-white\">导出失败</button>";
                 }
             });
 
