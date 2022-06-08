@@ -62,7 +62,7 @@ class BatchGrabContacts implements ShouldQueue
     {
         // 获取批量ID
         $entids = $this->ents->pluck('qike_enterprise_id')->toArray();
-        $payload = ['python3', 'contact_crawler.py', $this->qikeToken];
+        $payload = ['python3', 'contact_batch_crawler.py', $this->qikeToken];
         $payload = array_merge($payload, $entids);
 
         // 调用python获取数据
