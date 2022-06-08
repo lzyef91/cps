@@ -55,21 +55,24 @@ class BatchGrabContacts implements ShouldQueue
             return;
         }
 
-        foreach ($this->ents as $ent) {
-            $this->grab($ent);
-        }
+        $this->grab();
     }
 
-    protected function grab($ent)
+    protected function grab()
     {
+        // 获取批量ID
+        $entids = $this->ents->pluck('qike_enterprise_id')->toArray();
+        $payload = ['python3', 'contact_crawler.py', $this->qikeToken];
+        $payload = array_merge($payload, $entids);
+
         // 调用python获取数据
         try {
-            $process = new Process(['python3', 'contact_crawler.py', $ent->qike_enterprise_id, $this->qikeToken], env('PYTHON_WORK_DIR'));
+            $process = new Process($payload, env('PYTHON_WORK_DIR'));
             $process->start();
             $process->wait();
             $res = $process->getOutput();
         } catch (\Exception $e) {
-            $msg = "ProcessFailedException: qike_enterprise_id {$ent->qike_enterprise_id} {$e->getMessage()}";
+            $msg = "ProcessFailedException: {$e->getMessage()}";
             Log::error("BatchGrabContactException: {$msg}");
             return 'fail';
         }
@@ -88,46 +91,50 @@ class BatchGrabContacts implements ShouldQueue
             return 'fail';
         }
 
-        // 手机号
-        foreach ($res['data']['mobile'] as $m) {
-            DB::table('youzan_contacts')->updateOrInsert(
-                [
-                    'shop_id'=> $ent->shop_id,
-                    'qike_contact_id' => $m['qike_contact_id'],
-                    'contact_type' => 1
-                ],
-                $m
-            );
-        }
+        foreach($res['data'] as $contact) {
+            $shopid = $this->ents->firstWhere('qike_enterprise_id',$contact['entid'])->shop_id;
 
-        // 固话
-        foreach ($res['data']['phone'] as $m) {
-            DB::table('youzan_contacts')->updateOrInsert(
-                [
-                    'shop_id'=> $ent->shop_id,
-                    'qike_contact_id' => $m['qike_contact_id'],
-                    'contact_type' => 2
-                ],
-                $m
-            );
-        }
+            // 手机号
+            foreach ($contact['mobile'] as $m) {
+                DB::table('youzan_contacts')->updateOrInsert(
+                    [
+                        'shop_id'=> $shopid,
+                        'qike_contact_id' => $m['qike_contact_id'],
+                        'contact_type' => 1
+                    ],
+                    $m
+                );
+            }
 
-        // email
-        foreach ($res['data']['email'] as $m) {
-            DB::table('youzan_contacts')->updateOrInsert(
-                [
-                    'shop_id'=> $ent->shop_id,
-                    'qike_contact_id' => $m['qike_contact_id'],
-                    'contact_type' => 3
-                ],
-                $m
-            );
-        }
+            // 固话
+            foreach ($contact['phone'] as $p) {
+                DB::table('youzan_contacts')->updateOrInsert(
+                    [
+                        'shop_id'=> $shopid,
+                        'qike_contact_id' => $p['qike_contact_id'],
+                        'contact_type' => 2
+                    ],
+                    $p
+                );
+            }
 
-        // 更改状态
-        DB::table('youzan_shops')->where('id', $ent->shop_id)->update([
-            'has_contacts' => Contact::$STATUS[Contact::$CONTACT_READY]
-        ]);
+            // email
+            foreach ($contact['email'] as $e) {
+                DB::table('youzan_contacts')->updateOrInsert(
+                    [
+                        'shop_id'=> $shopid,
+                        'qike_contact_id' => $e['qike_contact_id'],
+                        'contact_type' => 3
+                    ],
+                    $e
+                );
+            }
+
+            // 更改状态
+            DB::table('youzan_shops')->where('id', $shopid)->update([
+                'has_contacts' => Contact::$STATUS[Contact::$CONTACT_READY]
+            ]);
+        }
 
         return 'success';
     }

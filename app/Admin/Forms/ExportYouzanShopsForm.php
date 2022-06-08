@@ -92,7 +92,7 @@ class ExportYouzanShopsForm extends Form implements LazyRenderable
             $query = $this->buildGrabQuery($payload);
             $query->chunkById(50, function($shops)use(&$batches, $token){
                 $ids = $shops->pluck('id')->all();
-                $ents = Enterprise::whereIn('shop_id', $ids)->get();
+                $ents = Enterprise::select('shop_id','qike_enterprise_id')->whereIn('shop_id', $ids)->get();
                 $batches[] = new BatchGrabContacts($ents, $token);
             });
 

@@ -32,7 +32,7 @@ return new class extends Migration
             // 来源类型 Api:contact [sources][0][source]
             $table->string('source_type')->nullable();
             // 来源网页 Api:contact [sources][0][url]
-            $table->string('source_url')->nullable();
+            $table->text('source_url')->nullable();
 
             $table->timestamps();
         });
