@@ -1,6 +1,4 @@
 import sys
-sys.path.append('/home/laradock/.local/lib/python3.8/site-packages')
-
 import requests
 import json
 
