@@ -68,6 +68,7 @@ class BatchGrabContacts implements ShouldQueue
         // 调用python获取数据
         try {
             $process = new Process($payload, env('PYTHON_WORK_DIR'));
+            $process->setTimeout(300);
             $process->start();
             $process->wait();
             $res = $process->getOutput();
