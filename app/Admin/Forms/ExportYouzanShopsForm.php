@@ -127,11 +127,14 @@ class ExportYouzanShopsForm extends Form implements LazyRenderable
     public function form()
     {
         // 计算消耗的线索
-        $payload = $this->payload['q'] ?? [];
-        $total = $this->buildGrabQuery($payload)->count();
-        if ($total > 0) {
-            $this->confirm('确认导出',"如果勾选拉取新线索，则此次导出将消耗企客多{$total}条线索");
-        }
+        $payload = $this->payload['q'] ?? null;
+        $totalGrab = $this->buildGrabQuery($payload)->count();
+        // 计算已有线索量
+        $totalExist = Shop::where('has_contacts', Contact::$STATUS[Contact::$CONTACT_READY])->count();
+        // 提示
+        $content = "此次导出包含已有线索{$totalExist}条/待领取线索{$totalGrab}条";
+        if ($totalGrab > 0) $content .= "，如果勾选拉取新线索，则此次导出将消耗企客多{$totalGrab}条线索";
+        $this->confirm('确认导出', $content);
 
         $this->checkbox('export_fields', '导出项目')->options($this->options)->required();
         $this->checkbox('grab_new', '拉取线索')->options(['yes'=>'拉取新线索', 'no'=>'导出已有线索'])->required();
