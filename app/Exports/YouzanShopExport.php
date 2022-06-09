@@ -17,11 +17,21 @@ class YouzanShopExport implements FromQuery, WithMapping, WithHeadings, ShouldQu
 {
     use Exportable;
 
+    /**
+     * 筛选条件
+     * @var array
+     */
     protected $queryParams;
+    /**
+     * 是否只导出有线索的数据
+     * @var bool
+     */
+    protected $onlyExistedData;
 
-    public function __construct(array $queryParams)
+    public function __construct(array $queryParams, $onlyExistedData = false)
     {
         $this->queryParams = $queryParams;
+        $this->onlyExistedData = $onlyExistedData;
     }
 
     public function failed(Throwable $exception): void
@@ -102,6 +112,8 @@ class YouzanShopExport implements FromQuery, WithMapping, WithHeadings, ShouldQu
             'brands:shop_id,brand_name,brand_name_en',
             'contacts:shop_id,contact_type,contact_no,name,duty'
         ]);
+
+        if ($this->onlyExistedData) $query->where('has_contacts', Contact::$STATUS[Contact::$CONTACT_READY]);
 
         if (!$this->queryParams) return $query;
 

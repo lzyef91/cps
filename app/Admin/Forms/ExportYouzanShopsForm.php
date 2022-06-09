@@ -47,21 +47,11 @@ class ExportYouzanShopsForm extends Form implements LazyRenderable
      */
     public function handle(array $input)
     {
-        // 令牌有效性
-        if (!$token = Cache::get(Shop::$TOKEN_CACHE_KEY)) {
-            return $this->response()->error("请先录入令牌");
-        }
-
         // 获取筛选条件
         $payload = $this->payload['q'] ?? NULL;
         $payload = array_merge($payload, $input);
 
-        // 判断有多少条待领取线索
-        $query = $this->buildGrabQuery($payload);
-        $total = $query->count();
-
         // 生成导出记录
-
         // 文件名
         $excelName = 'youzan_shops_export_'.Carbon::now()->format('YmdHis').'.csv';
         // 文件存储盘
@@ -84,9 +74,15 @@ class ExportYouzanShopsForm extends Form implements LazyRenderable
 
         // 导出excel任务对象
         $payload['export_uuid'] = $uuid;
-        $exportJob = new YouzanShopExport($payload);
+        $exportJob = new YouzanShopExport($payload, !$payload['grab_new']);
 
-        if ($total > 0) {
+        // 拉取新线索
+        if ($payload['grab_new'] == 1 && $this->buildGrabQuery($payload)->count() > 0) {
+            // 令牌有效性
+            if (!$token = Cache::get(Shop::$TOKEN_CACHE_KEY)) {
+                return $this->response()->error("请先录入令牌");
+            }
+
             // 批量领取联系方式
             $batches = [];
             $query = $this->buildGrabQuery($payload);
@@ -111,7 +107,7 @@ class ExportYouzanShopsForm extends Form implements LazyRenderable
             // 保存批处理ID
             $exportRecord->batch_id = $batch->id;
         } else {
-            // 没有待领取的联系方式，直接导出
+            // 不拉取线索直接导出
             $exportJob->store($excelName, $disk)->chain([
                 new NotifyExportResult($uuid, true)
             ]);
@@ -132,12 +128,13 @@ class ExportYouzanShopsForm extends Form implements LazyRenderable
     {
         // 计算消耗的线索
         $payload = $this->payload['q'] ?? NULL;
-        $query = $this->buildGrabQuery($payload);
-        $total = $query->count();
+        $total = $this->buildGrabQuery($payload)->count();
         if ($total > 0) {
-            $this->confirm('确认导出',"此次导出将消耗企客多{$total}条线索");
+            $this->confirm('确认导出',"如果勾选拉取新线索，则此次导出将消耗企客多{$total}条线索");
         }
+
         $this->checkbox('export_fields', '导出项目')->options($this->options)->required();
+        $this->checkbox('grab_new', '拉取线索')->options([1=>'拉取新线索', 0=>'导出已有线索'])->required();
     }
 
     protected function parseOptions($exportFields)
@@ -157,7 +154,8 @@ class ExportYouzanShopsForm extends Form implements LazyRenderable
     public function default()
     {
         return [
-            'export_fields'  => [1,2,3,4,5,6,7,8,9,10,11,12,13]
+            'export_fields'  => [1,2,3,4,5,6,7,8,9,10,11,12,13],
+            'grab_new' => 0
         ];
     }
 
