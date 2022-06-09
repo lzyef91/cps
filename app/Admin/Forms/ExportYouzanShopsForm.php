@@ -74,10 +74,10 @@ class ExportYouzanShopsForm extends Form implements LazyRenderable
 
         // 导出excel任务对象
         $payload['export_uuid'] = $uuid;
-        $exportJob = new YouzanShopExport($payload, !$payload['grab_new']);
+        $exportJob = new YouzanShopExport($payload, $payload['grab_new'] != 'yes');
 
         // 拉取新线索
-        if ($payload['grab_new'] == 1 && $this->buildGrabQuery($payload)->count() > 0) {
+        if ($payload['grab_new'] == 'yes' && $this->buildGrabQuery($payload)->count() > 0) {
             // 令牌有效性
             if (!$token = Cache::get(Shop::$TOKEN_CACHE_KEY)) {
                 return $this->response()->error("请先录入令牌");
@@ -134,7 +134,7 @@ class ExportYouzanShopsForm extends Form implements LazyRenderable
         }
 
         $this->checkbox('export_fields', '导出项目')->options($this->options)->required();
-        $this->checkbox('grab_new', '拉取线索')->options([1=>'拉取新线索', 0=>'导出已有线索'])->required();
+        $this->checkbox('grab_new', '拉取线索')->options(['yes'=>'拉取新线索', 'no'=>'导出已有线索'])->required();
     }
 
     protected function parseOptions($exportFields)
@@ -155,7 +155,7 @@ class ExportYouzanShopsForm extends Form implements LazyRenderable
     {
         return [
             'export_fields'  => [1,2,3,4,5,6,7,8,9,10,11,12,13],
-            'grab_new' => 0
+            'grab_new' => 'no'
         ];
     }
 
