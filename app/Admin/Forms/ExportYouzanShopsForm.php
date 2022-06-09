@@ -137,7 +137,7 @@ class ExportYouzanShopsForm extends Form implements LazyRenderable
         $this->confirm('确认导出', $content);
 
         $this->checkbox('export_fields', '导出项目')->options($this->options)->required();
-        $this->checkbox('grab_new', '拉取线索')->options(['yes'=>'拉取新线索', 'no'=>'导出已有线索'])->required();
+        $this->radio('grab_new', '拉取线索')->options(['yes'=>'拉取新线索', 'no'=>'导出已有线索'])->required();
     }
 
     protected function parseOptions($exportFields)
