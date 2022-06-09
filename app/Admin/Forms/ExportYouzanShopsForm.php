@@ -130,7 +130,7 @@ class ExportYouzanShopsForm extends Form implements LazyRenderable
         $payload = $this->payload['q'] ?? null;
         $totalGrab = $this->buildGrabQuery($payload)->count();
         // 计算已有线索量
-        $totalExist = Shop::where('has_contacts', Contact::$STATUS[Contact::$CONTACT_READY])->count();
+        $totalExist = $this->buildGrabQuery($payload, true)->count();
         // 提示
         $content = "此次导出包含已有线索{$totalExist}条/待领取线索{$totalGrab}条";
         if ($totalGrab > 0) $content .= "，如果勾选拉取新线索，则此次导出将消耗企客多{$totalGrab}条线索";
@@ -165,9 +165,12 @@ class ExportYouzanShopsForm extends Form implements LazyRenderable
     /**
      * 构建待领取联系方式的查询
      */
-    protected function buildGrabQuery($queryParams)
+    protected function buildGrabQuery($queryParams, $onlyExistedData = false)
     {
-        $query = Shop::where('has_contacts', Contact::$STATUS[Contact::$WAIT_TO_GRAB]);
+        $query = Shop::query();
+
+        if ($onlyExistedData) $query->where('has_contacts', Contact::$STATUS[Contact::$CONTACT_READY]);
+        else $query->where('has_contacts', Contact::$STATUS[Contact::$WAIT_TO_GRAB]);
 
         if (!$queryParams) return $query;
 
