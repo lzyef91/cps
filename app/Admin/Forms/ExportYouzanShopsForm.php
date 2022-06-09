@@ -48,7 +48,7 @@ class ExportYouzanShopsForm extends Form implements LazyRenderable
     public function handle(array $input)
     {
         // 获取筛选条件
-        $payload = $this->payload['q'] ?? NULL;
+        $payload = $this->payload['q'] ?? [];
         $payload = array_merge($payload, $input);
 
         // 生成导出记录
@@ -127,7 +127,7 @@ class ExportYouzanShopsForm extends Form implements LazyRenderable
     public function form()
     {
         // 计算消耗的线索
-        $payload = $this->payload['q'] ?? NULL;
+        $payload = $this->payload['q'] ?? [];
         $total = $this->buildGrabQuery($payload)->count();
         if ($total > 0) {
             $this->confirm('确认导出',"如果勾选拉取新线索，则此次导出将消耗企客多{$total}条线索");
